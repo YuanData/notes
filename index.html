@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Notes</title>
+<link rel="stylesheet" href="vendor/hljs-github.min.css?v=894d512d6a">
+<link rel="stylesheet" href="app.css?v=894d512d6a">
+<script src="vendor/purify.min.js?v=894d512d6a" defer></script>
+<script src="vendor/marked.min.js?v=894d512d6a" defer></script>
+<script src="vendor/highlight.min.js?v=894d512d6a" defer></script>
+<script src="vendor/hljs-powershell.min.js?v=894d512d6a" defer></script>
+<script src="vendor/hljs-dos.min.js?v=894d512d6a" defer></script>
+<script src="app.js?v=894d512d6a" defer></script>
+</head>
+<body data-gate="be3085dc36f41519be325021b72e62b633449debb81f18bebae16a359414ce65">
+
+<main id="notfound" hidden>
+  <div class="nf">
+    <h1>404</h1>
+    <p>找不到這個頁面</p>
+  </div>
+</main>
+
+<main id="lock" hidden>
+  <form id="lock-form" class="lock-card" autocomplete="off">
+    <h1>Notes</h1>
+    <label for="key-input">主金鑰</label>
+    <input id="key-input" type="password" spellcheck="false" autocomplete="off" placeholder="貼上 43 字元的主金鑰">
+    <label class="remember"><input id="remember" type="checkbox"> 在這台裝置記住金鑰</label>
+    <button id="unlock-btn" type="submit">解鎖</button>
+    <p id="lock-msg" role="alert"></p>
+  </form>
+</main>
+
+<div id="app" hidden>
+  <aside id="col-left" class="col">
+    <div class="search">
+      <input id="search" type="search" placeholder="全文搜尋" autocomplete="off" spellcheck="false">
+      <div id="hit-nav" hidden>
+        <span id="hit-count" title="這份文件裡的命中數（Enter 下一個、Shift+Enter 上一個）"></span>
+        <button type="button" id="hit-prev" title="上一個命中（Shift+Enter）">↑</button>
+        <button type="button" id="hit-next" title="下一個命中（Enter）">↓</button>
+      </div>
+    </div>
+    <section id="panel-results" class="panel" hidden>
+      <header class="panel-head"><span id="results-title">搜尋結果</span></header>
+      <div class="panel-body" id="results"></div>
+    </section>
+    <section id="panel-tree" class="panel">
+      <header class="panel-head"><span>目錄</span><button class="x" type="button" data-close="tree" title="關閉目錄">✕</button></header>
+      <div class="panel-body"><nav id="tree"></nav></div>
+    </section>
+    <section id="panel-recent" class="panel">
+      <header class="panel-head"><span>最近修改</span><button class="x" type="button" data-close="recent" title="關閉最近修改">✕</button></header>
+      <div class="recent-ctl">
+        <select id="recent-unit" title="用筆數或天數決定範圍"><option value="n">筆數</option><option value="d">天數</option></select>
+        <input id="recent-range" type="range" min="0" max="7" step="1" title="拖拉調整範圍，最右邊是全部">
+        <span id="recent-label"></span>
+      </div>
+      <div class="panel-body"><ul id="recent"></ul></div>
+    </section>
+    <section id="panel-mine" class="panel" hidden>
+      <header class="panel-head"><span>書籤與最近閱讀</span><button class="x" type="button" data-close="mine" title="關閉書籤與最近閱讀">✕</button></header>
+      <div class="panel-body">
+        <div id="upd-box" hidden>
+          <h3 class="mine-h" id="upd-title"><span></span><button type="button" id="upd-allread" class="mine-clear" title="全部標為已讀">全部已讀</button></h3>
+          <ul id="upd-list"></ul>
+        </div>
+        <h3 class="mine-h">書籤</h3>
+        <ul id="bm-list"></ul>
+        <h3 class="mine-h">最近閱讀<button type="button" id="seen-clear" class="mine-clear" title="清除最近閱讀紀錄">清除</button></h3>
+        <ul id="seen-list"></ul>
+      </div>
+    </section>
+    <div class="resizer" data-col="left" title="拖拉調整寬度（雙擊恢復預設）"></div>
+  </aside>
+
+  <aside id="col-toc" class="col">
+    <section id="panel-toc" class="panel">
+      <header class="panel-head"><span>大綱</span><span id="toc-levels" class="levels"></span><button class="x" type="button" data-close="toc" title="關閉大綱">✕</button></header>
+      <div class="panel-body"><nav id="toc"></nav></div>
+    </section>
+    <div class="resizer" data-col="toc" title="拖拉調整寬度（雙擊恢復預設）"></div>
+  </aside>
+
+  <main id="content">
+    <div class="page">
+      <div class="edge edge-l" title="拖拉調整左邊的內文邊界"></div>
+      <div class="edge edge-r" title="拖拉調整右邊的內文邊界"></div>
+      <div id="crumb"></div>
+      <article id="doc"></article>
+    </div>
+  </main>
+</div>
+
+<div id="tfloat" class="doc-body" hidden aria-hidden="true"><div class="tf-inner"><table></table></div></div>
+
+<nav id="capsule" hidden aria-label="版面控制">
+  <button type="button" data-toggle="tree" title="開關目錄">目錄</button>
+  <button type="button" data-toggle="recent" title="開關最近修改">最近</button>
+  <button type="button" data-toggle="toc" title="開關大綱">大綱</button>
+  <button type="button" id="menu-btn" title="更多" aria-expanded="false">☰</button>
+  <div id="menu" hidden>
+    <div class="menu-row">
+      <button type="button" id="bm-btn" title="把這份文件加入書籤" aria-pressed="false">☆</button>
+      <button type="button" data-toggle="mine" title="開關書籤與最近閱讀">書籤</button>
+    </div>
+    <button type="button" id="tier-btn" title="切換內文寬度（窄 → 中 → 寬 → 自訂）">寬度 窄</button>
+    <button type="button" id="share-btn">分享連結</button>
+    <button type="button" id="lock-btn" title="清除畫面，並從這台裝置刪除金鑰">上鎖並忘記金鑰</button>
+  </div>
+</nav>
+
+<div id="jump" hidden>
+  <button type="button" id="jump-top" title="回到頂部" aria-label="回到頂部" hidden>↑</button>
+  <button type="button" id="jump-bottom" title="跳到底部" aria-label="跳到底部" hidden>↓</button>
+</div>
+
+<div id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-label="分享連結">
+    <header class="modal-head"><span>分享連結</span><button class="x" type="button" id="modal-close" title="關閉">✕</button></header>
+    <div id="share-list"></div>
+    <p class="modal-note">新增、修改、撤銷：編輯 <code>_publish/shares.json</code> 後 push。</p>
+  </div>
+</div>
+
+</body>
+</html>
